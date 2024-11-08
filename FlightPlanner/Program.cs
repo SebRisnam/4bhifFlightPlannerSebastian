@@ -18,6 +18,7 @@ namespace FlightPlanner
 
         static void Main(string[] args)
         {
+            //Sebastian Romano
             // Programm verwendet ADO.NET API Connected Layer, Alternativen: ADO.NET Disconnected Layer, ADO.NET Entity Framework
             try
             {
