@@ -18,5 +18,7 @@ namespace FlightPlanner.DataLayer
             return $"Id: {Id}, RegisteredCompanyName: {RegisteredCompanyName}, " + 
                 $"Country: {Country}, Headquarters: {Headquarters}";
         }
+
+
     }
 }
