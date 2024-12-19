@@ -72,7 +72,7 @@ namespace FlightPlanner.DataLayer
                 IDbCommand createPlaneCommand = databaseConnection.CreateCommand();
                 createPlaneCommand.CommandText =
                    $"insert into Plane values ({plane.Id}, '{plane.OwnershipDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"{plane.LastMaintenance.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}, '{plane.PlaneTypeId}', " +
+                   $"'{plane.LastMaintenance.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', '{plane.PlaneTypeId}', " +
                    $"{plane.AirlineId});";
                 Console.WriteLine(createPlaneCommand.CommandText);
                 databaseConnection.Open();
@@ -91,8 +91,8 @@ namespace FlightPlanner.DataLayer
                 updatePlaneCommand.CommandText =
                    $"update Plane set OwnershipDate = '{plane.OwnershipDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
                    $"LastMaintenance = '{plane.LastMaintenance.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"PlaneTypeId = {plane.PlaneTypeId}, " +
-                   $"AirLineId = '{plane.AirlineId}', " +
+                   $"PlaneTypeId = '{plane.PlaneTypeId}', " +
+                   $"AirLineId = '{plane.AirlineId}' " +
                    $"where Plane.Id = {plane.Id};";
                 Console.WriteLine(updatePlaneCommand.CommandText);
 

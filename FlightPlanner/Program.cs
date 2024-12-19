@@ -43,8 +43,57 @@ namespace FlightPlanner
                 TestHelper.InitializeDatabase(connectionString);
 
                 // CRUD - Create, Read, Update, Delete
-                FlightDataMapper flightDataMapper = new FlightDataMapper(connectionString);
 
+                AirlineDataMapper airlineDataMapper = new AirlineDataMapper(connectionString);
+                Console.WriteLine("select * from Airline:");
+                List<Airline> airlines = airlineDataMapper.ReadAirlines();
+                foreach (Airline item in airlines)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+                Airline testAirline = new Airline
+                {
+                    Id = 4,
+                    RegisteredCompanyName = "My Airlines",
+                    Country = "This One",
+                    HeadQuarters = "That One"
+                };
+
+                airlineDataMapper.Create(testAirline);
+                testAirline.HeadQuarters = "Another One";
+
+                rowCount = airlineDataMapper.Update(testAirline);
+                //rowCount = airlineDataMapper.Delete(3);
+                
+                Console.WriteLine("\n=================================0\n");
+
+                PlaneDataMapper planeDataMapper = new PlaneDataMapper(connectionString);
+                Console.WriteLine("select * from Plane:");
+                List<Plane> planes = planeDataMapper.ReadPlanes();
+                foreach (Plane item in planes)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+                Plane testPlane = new Plane
+                {
+                    Id = 500,
+                    OwnershipDate = DateTime.Parse("03.12.1981 00:00:00"),
+                    LastMaintenance = DateTime.Parse("30.12.2000 00:00:00"),
+                    PlaneTypeId = "Boeing 747",
+                    AirlineId = 2
+
+                };
+
+                planeDataMapper.Create(testPlane);
+                testPlane.AirlineId = 1;
+
+                rowCount = planeDataMapper.Update(testPlane);
+                //rowCount = planeDataMapper.Delete(10);
+
+
+                /*
+                FlightDataMapper flightDataMapper = new FlightDataMapper(connectionString);
+                
                 Console.WriteLine("select * from Flight:");
                 List<Flight> flights = flightDataMapper.ReadFlights();
 
@@ -95,7 +144,7 @@ namespace FlightPlanner
                     Console.WriteLine($"{nameof(customerDataMapper.UpdateLastName)}: No rows were updated!");
                 }
 
-                
+                */
             }
             catch (Exception ex)
             {

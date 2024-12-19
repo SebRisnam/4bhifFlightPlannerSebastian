@@ -11,12 +11,12 @@ namespace FlightPlanner.DataLayer
         public int Id { get; set; }
         public string RegisteredCompanyName { get; set; }
         public string Country { get; set; }
-        public string Headquarters { get; set; }
+        public string HeadQuarters { get; set; }
 
         public override string ToString()
         {
             return $"Id: {Id}, RegisteredCompanyName: {RegisteredCompanyName}, " + 
-                $"Country: {Country}, Headquarters: {Headquarters}";
+                $"Country: {Country}, Headquarters: {HeadQuarters}";
         }
 
 

@@ -18,7 +18,7 @@ namespace FlightPlanner.DataLayer
             this.ConnectionString = ConnectionString;
         }
 
-        public List<Airline> ReadPlanes()
+        public List<Airline> ReadAirlines()
         {
             List<Airline> airlines = new List<Airline>();
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
@@ -36,7 +36,7 @@ namespace FlightPlanner.DataLayer
                     airline.Id = (int)airlineReader["Id"];
                     airline.RegisteredCompanyName = (string)airlineReader["RegisteredCompanyName"];
                     airline.Country = (string)airlineReader["Country"];
-                    airline.Headquarters = (string)airlineReader["Headquarters"];
+                    airline.HeadQuarters = (string)airlineReader["Headquarters"];
 
                     airlines.Add(airline);
                 }
@@ -59,7 +59,7 @@ namespace FlightPlanner.DataLayer
                 airline.Id = (int)airlineReader["Id"];
                 airline.RegisteredCompanyName = (string)airlineReader["RegisteredCompanyName"];
                 airline.Country = (string)airlineReader["Country"];
-                airline.Headquarters = (string)airlineReader["Headquarters"];
+                airline.HeadQuarters = (string)airlineReader["HeadQuarters"];
 
             }
             return plane;
@@ -72,7 +72,7 @@ namespace FlightPlanner.DataLayer
                 IDbCommand createAirlineCommand = databaseConnection.CreateCommand();
                 createAirlineCommand.CommandText =
                    $"insert into Airline values ({airline.Id}, '{airline.RegisteredCompanyName}', " +
-                   $"{airline.Country}, '{airline.Headquarters};";
+                   $"'{airline.Country}', '{airline.HeadQuarters}');";
                 Console.WriteLine(createAirlineCommand.CommandText);
                 databaseConnection.Open();
 
@@ -82,26 +82,26 @@ namespace FlightPlanner.DataLayer
             }
         }
 
-        /*public int Update(Airline airline)
+        public int Update(Airline airline)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
                 IDbCommand updateAirlineCommand = databaseConnection.CreateCommand();
                 updateAirlineCommand.CommandText =
-                   $"update Plane set OwnershipDate = '{airline.OwnershipDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"LastMaintenance = '{airline.LastMaintenance.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"PlaneTypeId = {airline.PlaneTypeId}, " +
-                   $"AirLineId = '{airline.AirlineId}', " +
-                   $"where Plane.Id = {airline.Id};";
+                   $"update Airline set " +
+                   $"RegisteredCompanyName = '{airline.RegisteredCompanyName}', " +
+                   $"Country = '{airline.Country}', " +
+                   $"HeadQuarters = '{airline.HeadQuarters}' " +
+                   $"where Id = {airline.Id};";
+
                 Console.WriteLine(updateAirlineCommand.CommandText);
 
                 databaseConnection.Open();
 
                 int rowCount = updateAirlineCommand.ExecuteNonQuery();
                 return rowCount;
-
             }
-        }*/
+        }
 
         public int Delete(Airline airline)
         {
