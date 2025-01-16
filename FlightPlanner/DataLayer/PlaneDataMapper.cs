@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,7 +29,6 @@ namespace FlightPlanner.DataLayer
                 databaseConnection.Open();
 
                 IDataReader planeReader = selectPlaneCommand.ExecuteReader();
-
                 while (planeReader.Read())
                 {
                     // https://docs.microsoft.com/en-us/dotnet/api/system.data.idatarecord.item
@@ -44,6 +44,7 @@ namespace FlightPlanner.DataLayer
             }
             return planes;
         }
+
 
         public Plane Read(int Id)
         {
@@ -62,6 +63,7 @@ namespace FlightPlanner.DataLayer
                 plane.AirlineId = (int)planeReader["AirlineId"];
 
             }
+            
             return plane;
         }
 

@@ -63,7 +63,10 @@ namespace FlightPlanner
                 testAirline.HeadQuarters = "Another One";
 
                 rowCount = airlineDataMapper.Update(testAirline);
+                
                 //rowCount = airlineDataMapper.Delete(3);
+                AirlineRepository airlineRepository = new AirlineRepository(connectionString);
+                airlineRepository.DeleteAirline(3);
                 
                 Console.WriteLine("\n=================================0\n");
 
@@ -86,10 +89,25 @@ namespace FlightPlanner
 
                 planeDataMapper.Create(testPlane);
                 testPlane.AirlineId = 1;
+                planes = planeDataMapper.ReadPlanes();
+                foreach (Plane item in planes)
+                {
+                    Console.WriteLine(item.ToString());
+                }
 
                 rowCount = planeDataMapper.Update(testPlane);
+                planes = planeDataMapper.ReadPlanes();
+                foreach (Plane item in planes)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+                
                 //rowCount = planeDataMapper.Delete(10);
-
+                planes = planeDataMapper.ReadPlanes();
+                foreach (Plane item in planes)
+                {
+                    Console.WriteLine(item.ToString());
+                }
 
                 /*
                 FlightDataMapper flightDataMapper = new FlightDataMapper(connectionString);

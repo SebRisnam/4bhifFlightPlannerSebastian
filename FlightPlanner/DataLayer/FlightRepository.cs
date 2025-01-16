@@ -52,5 +52,18 @@ namespace FlightPlanner.DataLayer
             }
         }
 
+        internal int DeleteFlightByPlaneId(int id)
+        {
+            int rowCount = Int32.MinValue;
+            List<Flight> flights = flightDataMapper.ReadFlights();
+            foreach (Flight flight in flights)
+            {
+                if (flight.PlaneId == id)
+                {
+                    DeleteFlight(id);
+                }
+            }
+            return rowCount;
+        }
     }
 }
