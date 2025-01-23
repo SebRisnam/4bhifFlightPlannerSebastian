@@ -12,7 +12,7 @@ namespace FlightPlanner.DataLayer
         public DateTime OwnershipDate { get; set; }
         public DateTime LastMaintenance {  get; set; }
         public string PlaneTypeId { get; set; }
-        public int AirlineId { get; set; }
+        public int? AirlineId { get; set; }
 
         public override string ToString()
         {

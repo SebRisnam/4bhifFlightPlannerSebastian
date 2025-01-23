@@ -1,4 +1,5 @@
-﻿using FlightPlanner.DataLayer;
+﻿using FlightPlanner.BusinessLogicLayer;
+using FlightPlanner.DataLayer;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -64,9 +65,9 @@ namespace FlightPlanner
 
                 rowCount = airlineDataMapper.Update(testAirline);
                 
-                //rowCount = airlineDataMapper.Delete(3);
-                AirlineRepository airlineRepository = new AirlineRepository(connectionString);
-                airlineRepository.DeleteAirline(3);
+                rowCount = airlineDataMapper.Delete(3);
+                //AirlineRepository airlineRepository = new AirlineRepository(connectionString);
+                //airlineRepository.DeleteAirline(3);
                 
                 Console.WriteLine("\n=================================0\n");
 
@@ -103,6 +104,8 @@ namespace FlightPlanner
                 }
                 
                 //rowCount = planeDataMapper.Delete(10);
+                PlaneRepository planeRepository = new PlaneRepository(connectionString);
+                planeRepository.DeletePlane(10);
                 planes = planeDataMapper.ReadPlanes();
                 foreach (Plane item in planes)
                 {
@@ -163,6 +166,11 @@ namespace FlightPlanner
                 }
 
                 */
+
+                Console.WriteLine("=================================================");
+                Console.WriteLine("Testing the booking of a flight");
+                BookingService bookingService = new BookingService(connectionString);
+                bookingService.BookFlight(203, 1000, 1, 2, 240);
             }
             catch (Exception ex)
             {

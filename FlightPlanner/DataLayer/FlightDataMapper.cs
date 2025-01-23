@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Data;
-using System.Data.SqlClient;
-using System.Data.Common;
-
 namespace FlightPlanner.DataLayer
 {
-
-    /// <summary>
-    /// Data mapper design pattern: https://en.wikipedia.org/wiki/Data_mapper_pattern    
-    /// </summary>
-    class FlightDataMapper
+    internal class FlightDataMapper
     {
-        public String ConnectionString { get; set; }
+        public string ConnectionString { get; set; }
 
         public FlightDataMapper(string connectionString)
         {
@@ -25,80 +20,111 @@ namespace FlightPlanner.DataLayer
 
         public List<Flight> ReadFlights()
         {
-            // Ignore:
-            // Using OleDbConnection instead of SqlConection, e.g. for Microsoft Access
-            // DbConnection databaseConnection = new OleDbConnection(@"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=|DataDirectory|\schule2000.mdb"); 
             List<Flight> flights = new List<Flight>();
-
-            // Declare the variable as DbConnection not as SqlConnection so you can easier replace SQL Server by an Oracle Database Server, etc.
-            // There is also a design principle: "Program to an interface (= base class OR C#-interface) not an implementation."
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                // erzeuge zuerst ein zur Sql Server Connection passendes Command, weise Select Befehl zu
                 IDbCommand selectFlightCommand = databaseConnection.CreateCommand();
-
-                // Aus Performance Gründen alle Datensätze auf einmal lesen, nicht die Methode Read() dieser Klasse verwenden.
-                selectFlightCommand.CommandText = "select * from Flight";
-
+                selectFlightCommand.CommandText = "SELECT * FROM Flight";
                 databaseConnection.Open();
 
-                // erzeuge den DataReader (der das zeilenweise Auslesen erlaubt) aus dem Command
                 IDataReader flightReader = selectFlightCommand.ExecuteReader();
-                // gibt es nur einen Wert ist auch .ExecuteScalar möglich
-                // für update, insert, ...  ist aCommand.ExecuteNonQuery  zuständig
 
-                //jetzt in der Schleife durch das Ergebnis des Select Befehls
                 while (flightReader.Read())
                 {
-                    // https://docs.microsoft.com/en-us/dotnet/api/system.data.idatarecord.item
-                    Flight flight = new Flight();
-                    flight.Id = flightReader.GetInt32(0); // Column 0 of table Flight
-                    flight.Departure = flightReader.GetString(1);
-                    flight.Destination = flightReader.GetValue(2).ToString();
-                    flight.Duration = (int)flightReader["Duration"]; // Column 3 GetInt32(3)
-                    flight.DepartureDate = flightReader.GetDateTime(4);
-                    flight.PlaneId = flightReader.GetInt32(5);
+                    Flight flight = new Flight
+                    {
+                        Id = (int)flightReader["Id"], // Id is an int
+                        Departure = (string)flightReader["Departure"],
+                        Destination = (string)flightReader["Destination"],
+                        Duration = (int)flightReader["Duration"],
+                        DepartureDate = (DateTime)flightReader["DepartureDate"],
+                        PlaneId = (int)flightReader["PlaneId"]
+                    };
 
                     flights.Add(flight);
                 }
-
-                return flights;
             }
-            // finally
-        }
-        /// <summary>
-        /// Read a single flight record.
-        /// </summary>
-        /// <param name="Id">The primary key of the flight record.</param>
-        /// <returns>Returns an object that stores the flight record.</returns>
-        public Flight Read(int Id)
-        {
-            throw new NotImplementedException();
+            return flights;
         }
 
+        public Flight Read(int id)
+        {
+            Flight flight = null;
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                IDbCommand selectFlightCommand = databaseConnection.CreateCommand();
+                selectFlightCommand.CommandText = "SELECT * FROM Flight WHERE Id = @Id";
+
+                var idParameter = selectFlightCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = id;
+                selectFlightCommand.Parameters.Add(idParameter);
+
+                databaseConnection.Open();
+
+                IDataReader flightReader = selectFlightCommand.ExecuteReader();
+
+                if (flightReader.Read())
+                {
+                    flight = new Flight
+                    {
+                        Id = (int)flightReader["Id"], // Id is an int
+                        Departure = (string)flightReader["Departure"],
+                        Destination = (string)flightReader["Destination"],
+                        Duration = (int)flightReader["Duration"],
+                        DepartureDate = (DateTime)flightReader["DepartureDate"],
+                        PlaneId = (int)flightReader["PlaneId"]
+                    };
+                }
+            }
+            return flight;
+        }
 
         public int Create(Flight flight)
         {
-            // using = try/finally block, in the finally block the database connection is disposed (removed) in case
-            // of an error and in case of no error
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                // erzeuge zuerst ein zur Sql Server Connection passendes Command, weise Select Befehl zu
-                IDbCommand createFlightCommand = databaseConnection.CreateCommand(); //Factory Pattern
-                // INSERT INTO Flight VALUES(203, 'Berlin', 'Paris', 120, '20180202', 21);
-                createFlightCommand.CommandText =
-                   $"insert into Flight values ({flight.Id}, '{flight.Departure}', '{flight.Destination}', " +
-                   $"{flight.Duration}, '{flight.DepartureDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"{flight.PlaneId});";
+                IDbCommand createFlightCommand = databaseConnection.CreateCommand();
 
-                // Console.WriteLine NICHT an dieser Stelle in einem professionellen Programm verwenden, 
-                // Methode soll auch bei GUI Anwendungen funktionieren 
+                createFlightCommand.CommandText =
+                    "INSERT INTO Flight (Id, Departure, Destination, Duration, DepartureDate, PlaneId) " +
+                    "VALUES (@Id, @Departure, @Destination, @Duration, @DepartureDate, @PlaneId);";
+
+                var idParameter = createFlightCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = flight.Id;
+                createFlightCommand.Parameters.Add(idParameter);
+
+                var departureParameter = createFlightCommand.CreateParameter();
+                departureParameter.ParameterName = "@Departure";
+                departureParameter.Value = flight.Departure ?? (object)DBNull.Value;
+                createFlightCommand.Parameters.Add(departureParameter);
+
+                var destinationParameter = createFlightCommand.CreateParameter();
+                destinationParameter.ParameterName = "@Destination";
+                destinationParameter.Value = flight.Destination ?? (object)DBNull.Value;
+                createFlightCommand.Parameters.Add(destinationParameter);
+
+                var durationParameter = createFlightCommand.CreateParameter();
+                durationParameter.ParameterName = "@Duration";
+                durationParameter.Value = flight.Duration;
+                createFlightCommand.Parameters.Add(durationParameter);
+
+                var departureDateParameter = createFlightCommand.CreateParameter();
+                departureDateParameter.ParameterName = "@DepartureDate";
+                departureDateParameter.Value = flight.DepartureDate;
+                createFlightCommand.Parameters.Add(departureDateParameter);
+
+                var planeIdParameter = createFlightCommand.CreateParameter();
+                planeIdParameter.ParameterName = "@PlaneId";
+                planeIdParameter.Value = flight.PlaneId;
+                createFlightCommand.Parameters.Add(planeIdParameter);
+
                 Console.WriteLine(createFlightCommand.CommandText);
                 databaseConnection.Open();
 
                 int rowCount = createFlightCommand.ExecuteNonQuery();
                 return rowCount;
-
             }
         }
 
@@ -106,25 +132,51 @@ namespace FlightPlanner.DataLayer
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                // erzeuge zuerst ein zur Sql Server Connection passendes Command, weise Select Befehl zu
                 IDbCommand updateFlightCommand = databaseConnection.CreateCommand();
                 updateFlightCommand.CommandText =
-                   $"update Flight set Departure = '{flight.Departure}', " +
-                   $"Destination = '{flight.Destination}', " +
-                   $"Duration = {flight.Duration}, " +
-                   $"DepartureDate = '{flight.DepartureDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"PlaneId = {flight.PlaneId} " +
-                   $"where Flight.Id = {flight.Id};";
+                    "UPDATE Flight SET " +
+                    "Departure = @Departure, " +
+                    "Destination = @Destination, " +
+                    "Duration = @Duration, " +
+                    "DepartureDate = @DepartureDate, " +
+                    "PlaneId = @PlaneId " +
+                    "WHERE Id = @Id;";
 
-                // Console.WriteLine NICHT an dieser Stelle in einem professionellen Programm verwenden, 
-                // Methode soll auch bei GUI Anwendungen funktionieren
+                var idParameter = updateFlightCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = flight.Id;
+                updateFlightCommand.Parameters.Add(idParameter);
+
+                var departureParameter = updateFlightCommand.CreateParameter();
+                departureParameter.ParameterName = "@Departure";
+                departureParameter.Value = flight.Departure ?? (object)DBNull.Value;
+                updateFlightCommand.Parameters.Add(departureParameter);
+
+                var destinationParameter = updateFlightCommand.CreateParameter();
+                destinationParameter.ParameterName = "@Destination";
+                destinationParameter.Value = flight.Destination ?? (object)DBNull.Value;
+                updateFlightCommand.Parameters.Add(destinationParameter);
+
+                var durationParameter = updateFlightCommand.CreateParameter();
+                durationParameter.ParameterName = "@Duration";
+                durationParameter.Value = flight.Duration;
+                updateFlightCommand.Parameters.Add(durationParameter);
+
+                var departureDateParameter = updateFlightCommand.CreateParameter();
+                departureDateParameter.ParameterName = "@DepartureDate";
+                departureDateParameter.Value = flight.DepartureDate;
+                updateFlightCommand.Parameters.Add(departureDateParameter);
+
+                var planeIdParameter = updateFlightCommand.CreateParameter();
+                planeIdParameter.ParameterName = "@PlaneId";
+                planeIdParameter.Value = flight.PlaneId;
+                updateFlightCommand.Parameters.Add(planeIdParameter);
+
                 Console.WriteLine(updateFlightCommand.CommandText);
-
                 databaseConnection.Open();
 
                 int rowCount = updateFlightCommand.ExecuteNonQuery();
                 return rowCount;
-
             }
         }
 
@@ -133,26 +185,24 @@ namespace FlightPlanner.DataLayer
             return Delete(flight.Id);
         }
 
-        public int Delete(int Id)
+        public int Delete(int id)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                // erzeuge zuerst ein zur Sql Server Connection passendes Command, weise Select Befehl zu
                 IDbCommand deleteFlightCommand = databaseConnection.CreateCommand();
-                deleteFlightCommand.CommandText =
-                   $"delete from Flight where Flight.Id = {Id};";
+                deleteFlightCommand.CommandText = "DELETE FROM Flight WHERE Id = @Id;";
 
-                // Console.WriteLine NICHT an dieser Stelle in einem professionellen Programm verwenden, 
-                // Methode soll auch bei GUI Anwendungen funktionieren
+                var idParameter = deleteFlightCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = id;
+                deleteFlightCommand.Parameters.Add(idParameter);
+
                 Console.WriteLine(deleteFlightCommand.CommandText);
-
                 databaseConnection.Open();
 
                 int rowCount = deleteFlightCommand.ExecuteNonQuery();
                 return rowCount;
             }
-
         }
-
     }
 }

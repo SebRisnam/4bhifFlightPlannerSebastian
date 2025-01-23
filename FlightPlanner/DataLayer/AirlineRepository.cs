@@ -25,15 +25,14 @@ namespace FlightPlanner.DataLayer
             planeDataMapper = new PlaneDataMapper(connectionString);
         }
 
-        public void DeleteAirline(int id)
+        public void DeleteAirline (int id)
         {
             int rowCount = Int32.MinValue;
             try
             {
                 // FK_Booking_Flight uses "on delete no action"
                 // FK_PilotRoster_Flight uses "ON DELETE CASCADE"
-                DeletePlanesByAirlineID(id);
-                rowCount = airlineDataMapper.Delete(id);
+                
             }
             catch (DbException dbEx) // TODO: review and improve exception handling
             {
@@ -45,18 +44,6 @@ namespace FlightPlanner.DataLayer
                 // TODO: log to log file
                 throw;
             }
-        }
-        public int DeletePlanesByAirlineID(int airlineID)
-        {
-            int rowCount = Int32.MinValue;
-            List<Plane> planes = planeDataMapper.ReadPlanes();
-            foreach (Plane item in planes) {
-                if (item.AirlineId == airlineID)
-                {
-                    planeRepository.DeletePlane(item.Id);
-                }
-            }
-            return rowCount;
         }
     }
 }

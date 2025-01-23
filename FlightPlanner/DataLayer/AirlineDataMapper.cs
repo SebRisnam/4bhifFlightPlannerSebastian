@@ -70,17 +70,39 @@ namespace FlightPlanner.DataLayer
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
                 IDbCommand createAirlineCommand = databaseConnection.CreateCommand();
+
                 createAirlineCommand.CommandText =
-                   $"insert into Airline values ({airline.Id}, '{airline.RegisteredCompanyName}', " +
-                   $"'{airline.Country}', '{airline.HeadQuarters}');";
+                    "INSERT INTO Airline (Id, RegisteredCompanyName, Country, HeadQuarters) " +
+                    "VALUES (@Id, @RegisteredCompanyName, @Country, @HeadQuarters);";
+
+                var idParameter = createAirlineCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = airline.Id;
+                createAirlineCommand.Parameters.Add(idParameter);
+
+                var registeredCompanyNameParameter = createAirlineCommand.CreateParameter();
+                registeredCompanyNameParameter.ParameterName = "@RegisteredCompanyName";
+                registeredCompanyNameParameter.Value = airline.RegisteredCompanyName ?? (object)DBNull.Value;
+                createAirlineCommand.Parameters.Add(registeredCompanyNameParameter);
+
+                var countryParameter = createAirlineCommand.CreateParameter();
+                countryParameter.ParameterName = "@Country";
+                countryParameter.Value = airline.Country;
+                createAirlineCommand.Parameters.Add(countryParameter);
+
+                var headQuartersParameter = createAirlineCommand.CreateParameter();
+                headQuartersParameter.ParameterName = "@HeadQuarters";
+                headQuartersParameter.Value = airline.HeadQuarters;
+                createAirlineCommand.Parameters.Add(headQuartersParameter);
+
                 Console.WriteLine(createAirlineCommand.CommandText);
                 databaseConnection.Open();
 
                 int rowCount = createAirlineCommand.ExecuteNonQuery();
                 return rowCount;
-
             }
         }
+
 
         public int Update(Airline airline)
         {

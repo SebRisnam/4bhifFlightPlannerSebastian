@@ -15,6 +15,8 @@ namespace FlightPlanner.DataLayer
     {
         private BookingDataMapper bookingDataMapper;
         private FlightDataMapper flightDataMapper;
+        private PlaneDataMapper planeDataMapper;
+        private PlaneTypeDataMapper planeTypeDataMapper;
         // TODO: add other data mappers
         string ConnectionString { get; set; }
 
@@ -23,6 +25,8 @@ namespace FlightPlanner.DataLayer
             this.ConnectionString = connectionString;
             bookingDataMapper = new BookingDataMapper(this.ConnectionString);
             flightDataMapper = new FlightDataMapper(this.ConnectionString);
+            planeDataMapper = new PlaneDataMapper(this.ConnectionString);
+            planeTypeDataMapper = new PlaneTypeDataMapper(this.ConnectionString);
         }
 
         public void DeleteFlight(int id)
@@ -52,18 +56,53 @@ namespace FlightPlanner.DataLayer
             }
         }
 
-        internal int DeleteFlightByPlaneId(int id)
+        public void DeleteFlightsByPlaneId(int planeId) 
         {
-            int rowCount = Int32.MinValue;
             List<Flight> flights = flightDataMapper.ReadFlights();
             foreach (Flight flight in flights)
             {
-                if (flight.PlaneId == id)
-                {
-                    DeleteFlight(id);
-                }
+                DeleteFlight(flight.Id);
             }
-            return rowCount;
         }
+
+        public void CreateBooking(Booking booking)
+        {
+            bookingDataMapper.Create(booking);
+        }
+
+        public int GetSeatsOfPlaneByFlightId(int FlightId)
+        {
+            int planeId = flightDataMapper.Read(FlightId).PlaneId;
+            string planeType = planeDataMapper.Read(planeId).PlaneTypeId;
+            int seats = planeTypeDataMapper.Read(planeType).Seats;
+            return seats;
+        }
+
+        public int SumSeatsByFlightId(int flightId)
+        {
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                IDbCommand sumSeatsCommand = databaseConnection.CreateCommand();
+                sumSeatsCommand.CommandText = "SELECT SUM(Seats) AS TotalSeats FROM Booking WHERE FlightId = @FlightId;";
+
+                var flightIdParameter = sumSeatsCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                sumSeatsCommand.Parameters.Add(flightIdParameter);
+
+                databaseConnection.Open();
+
+                object result = sumSeatsCommand.ExecuteScalar();
+
+                // If no bookings exist for the FlightId, result will be DBNull.Value
+                if (result == DBNull.Value)
+                {
+                    return 0; // No seats booked for this FlightId
+                }
+
+                return Convert.ToInt32(result); // Return the total number of seats
+            }
+        }
+
     }
 }

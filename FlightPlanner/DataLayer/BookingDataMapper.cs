@@ -1,221 +1,197 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FlightPlanner.DataLayer
 {
-    class BookingDataMapper
+    internal class BookingDataMapper
     {
-        public String ConnectionString { get; set; }
+        public string ConnectionString { get; set; }
 
         public BookingDataMapper(string connectionString)
         {
             this.ConnectionString = connectionString;
         }
 
-        private Booking ParseRecord(IDataReader bookingReader)
-        {
-            Booking booking = new Booking();
-
-            booking.FlightId = bookingReader.GetInt32(0);
-            booking.CustomerId = bookingReader.GetInt32(1);
-            booking.Seats = bookingReader.GetInt32(2);
-            booking.TravelClass = bookingReader.GetInt32(3);
-            booking.Price = bookingReader.GetDecimal(4);
-
-            return booking;
-        }
-
-        /// <summary>
-        /// A helper method to query the database so that the common code to access the database ist not duplicated
-        /// among several methods.
-        /// </summary>
-        /// <param name="sqlCommandText">SQL command to execute.</param>
-        /// <returns></returns>
-        private List<Booking> ReadBookings(string sqlCommandText)
+        public List<Booking> ReadBookings()
         {
             List<Booking> bookings = new List<Booking>();
-
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                IDbCommand bookingReadCommand = databaseConnection.CreateCommand();
-
-                bookingReadCommand.CommandText = sqlCommandText;
-
+                IDbCommand selectBookingCommand = databaseConnection.CreateCommand();
+                selectBookingCommand.CommandText = "SELECT * FROM Booking";
                 databaseConnection.Open();
 
-                IDataReader bookingReader = bookingReadCommand.ExecuteReader();
+                IDataReader bookingReader = selectBookingCommand.ExecuteReader();
 
                 while (bookingReader.Read())
                 {
-                    Booking booking = ParseRecord(bookingReader);
+                    Booking booking = new Booking
+                    {
+                        FlightId = (int)bookingReader["FlightId"],
+                        CustomerId = (int)bookingReader["CustomerId"],
+                        Seats = (int)bookingReader["Seats"],
+                        TravelClass = (int)bookingReader["TravelClass"],
+                        Price = (decimal)bookingReader["Price"]
+                    };
+
                     bookings.Add(booking);
                 }
-
-                return bookings;
             }
-        }
-
-        public List<Booking> ReadBookings()
-        {
-            List<Booking> bookings = ReadBookings("select * from Bookings;");
             return bookings;
         }
 
-        /// <summary>
-        /// Read a single flight record.
-        /// </summary>
-        /// <param name="Id">The primary key of the flight record.</param>
-        /// <returns>Returns an object that stores the flight record.</returns>
-        public Booking Read(int Id)
+        public Booking Read(int flightId, int customerId)
         {
-            throw new NotImplementedException();
-        }
-
-        public List<Booking> ReadByLastName(string lastName)
-        {
-            String sqlCommandText = $"select * from Bookings where Bookings.LastName = '{lastName}';";
-            List<Booking> bookings = ReadBookings(sqlCommandText);
-            return bookings;
-        }
-
-        /// <summary>
-        /// This time a stored procedure is used to create the data record.
-        /// The stored procedure also performs some checks like if enough seats are available
-        /// </summary>
-        /// <param name="booking"></param>
-        /// <returns></returns>
-        public void Create(Booking booking)
-        {
+            Booking booking = null;
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                // 1. create a command object identifying the stored procedure
-                IDbCommand command = databaseConnection.CreateCommand();
-                command.CommandText = "dbo.BookFlight";
+                IDbCommand selectBookingCommand = databaseConnection.CreateCommand();
+                selectBookingCommand.CommandText = "SELECT * FROM Booking WHERE FlightId = @FlightId AND CustomerId = @CustomerId";
 
-                // 2. tell the command object to execute a stored procedure
-                command.CommandType = CommandType.StoredProcedure;
+                var flightIdParameter = selectBookingCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                selectBookingCommand.Parameters.Add(flightIdParameter);
 
-                // 3. add parameter to command, which will be passed to the stored procedure
-                IDbDataParameter param;
-
-                param = command.CreateParameter();
-                param.ParameterName = "@FlightId";
-                param.DbType = DbType.Int32;
-                param.Value = booking.FlightId;
-                param.Direction = ParameterDirection.Input;
-                command.Parameters.Add(param);
-
-                param = command.CreateParameter();
-                param.ParameterName = "@CustomerId";
-                param.DbType = DbType.Int32;
-                param.Value = booking.CustomerId;
-                param.Direction = ParameterDirection.Input;
-                command.Parameters.Add(param);
-
-                param = command.CreateParameter();
-                param.ParameterName = "@Seats";
-                param.DbType = DbType.Int32;
-                param.Value = booking.Seats;
-                param.Direction = ParameterDirection.Input;
-                command.Parameters.Add(param);
-
-                param = command.CreateParameter();
-                param.ParameterName = "@TravelClass";
-                param.DbType = DbType.Int32;
-                param.Value = booking.TravelClass;
-                param.Direction = ParameterDirection.Input;
-                command.Parameters.Add(param);
-
-                param = command.CreateParameter();
-                param.ParameterName = "@Price";
-                param.DbType = DbType.Decimal;
-                param.Value = booking.Price;
-                param.Direction = ParameterDirection.Input;
-                command.Parameters.Add(param);
-
-                IDbDataParameter returnValue;
-                returnValue = command.CreateParameter();
-                returnValue.ParameterName = "@ReturnValue";
-                returnValue.DbType = DbType.Int32;
-                returnValue.Direction = ParameterDirection.ReturnValue;
-                command.Parameters.Add(returnValue);
+                var customerIdParameter = selectBookingCommand.CreateParameter();
+                customerIdParameter.ParameterName = "@CustomerId";
+                customerIdParameter.Value = customerId;
+                selectBookingCommand.Parameters.Add(customerIdParameter);
 
                 databaseConnection.Open();
 
-                // if Price were an output parameter (ParameterDirection.Output) you 
-                // could use cmd.Parameters["@Price"] to get its value
+                IDataReader bookingReader = selectBookingCommand.ExecuteReader();
 
-                // ExecuteNonQuery returns @@ROWCOUNT which is a variable of SQL Server
-                int sqlServerRowCount = command.ExecuteNonQuery();
-
-                int storedProcedureResult = (int) returnValue.Value;
-
-                if (sqlServerRowCount < 1)
+                if (bookingReader.Read())
                 {
-                    throw new InvalidOperationException("The booking could not be created!");
+                    booking = new Booking
+                    {
+                        FlightId = (int)bookingReader["FlightId"],
+                        CustomerId = (int)bookingReader["CustomerId"],
+                        Seats = (int)bookingReader["Seats"],
+                        TravelClass = (int)bookingReader["TravelClass"],
+                        Price = (decimal)bookingReader["Price"]
+                    };
                 }
             }
-            
+            return booking;
         }
 
-        public int TestStoredProcedure()
+        public int Create(Booking booking)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                // 1. create a command object identifying the stored procedure
-                IDbCommand command = databaseConnection.CreateCommand();
-                command.CommandText = "Test";
+                IDbCommand createBookingCommand = databaseConnection.CreateCommand();
 
-                // 2. tell the command object to execute a stored procedure
-                command.CommandType = CommandType.StoredProcedure;
+                createBookingCommand.CommandText =
+                    "INSERT INTO Booking (FlightId, CustomerId, Seats, TravelClass, Price) " +
+                    "VALUES (@FlightId, @CustomerId, @Seats, @TravelClass, @Price);";
 
-                // 3. add parameter to command, which will be passed to the stored procedure
-                //IDbDataParameter param;
+                var flightIdParameter = createBookingCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = booking.FlightId;
+                createBookingCommand.Parameters.Add(flightIdParameter);
 
-                //param = command.CreateParameter();
-                //param.ParameterName = "@FlightId";
-                //param.DbType = DbType.Int32;
-                //param.Value = 320;
-                //param.Direction = ParameterDirection.Input;
-                //command.Parameters.Add(param);
+                var customerIdParameter = createBookingCommand.CreateParameter();
+                customerIdParameter.ParameterName = "@CustomerId";
+                customerIdParameter.Value = booking.CustomerId;
+                createBookingCommand.Parameters.Add(customerIdParameter);
 
+                var seatsParameter = createBookingCommand.CreateParameter();
+                seatsParameter.ParameterName = "@Seats";
+                seatsParameter.Value = booking.Seats;
+                createBookingCommand.Parameters.Add(seatsParameter);
+
+                var travelClassParameter = createBookingCommand.CreateParameter();
+                travelClassParameter.ParameterName = "@TravelClass";
+                travelClassParameter.Value = booking.TravelClass;
+                createBookingCommand.Parameters.Add(travelClassParameter);
+
+                var priceParameter = createBookingCommand.CreateParameter();
+                priceParameter.ParameterName = "@Price";
+                priceParameter.Value = booking.Price;
+                createBookingCommand.Parameters.Add(priceParameter);
+
+                Console.WriteLine(createBookingCommand.CommandText);
                 databaseConnection.Open();
 
-                int rowCount = command.ExecuteNonQuery();
+                int rowCount = createBookingCommand.ExecuteNonQuery();
                 return rowCount;
             }
-
         }
 
         public int Update(Booking booking)
         {
-            throw new NotImplementedException();
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                IDbCommand updateBookingCommand = databaseConnection.CreateCommand();
+                updateBookingCommand.CommandText =
+                    "UPDATE Booking SET " +
+                    "Seats = @Seats, " +
+                    "TravelClass = @TravelClass, " +
+                    "Price = @Price " +
+                    "WHERE FlightId = @FlightId AND CustomerId = @CustomerId;";
+
+                var flightIdParameter = updateBookingCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = booking.FlightId;
+                updateBookingCommand.Parameters.Add(flightIdParameter);
+
+                var customerIdParameter = updateBookingCommand.CreateParameter();
+                customerIdParameter.ParameterName = "@CustomerId";
+                customerIdParameter.Value = booking.CustomerId;
+                updateBookingCommand.Parameters.Add(customerIdParameter);
+
+                var seatsParameter = updateBookingCommand.CreateParameter();
+                seatsParameter.ParameterName = "@Seats";
+                seatsParameter.Value = booking.Seats;
+                updateBookingCommand.Parameters.Add(seatsParameter);
+
+                var travelClassParameter = updateBookingCommand.CreateParameter();
+                travelClassParameter.ParameterName = "@TravelClass";
+                travelClassParameter.Value = booking.TravelClass;
+                updateBookingCommand.Parameters.Add(travelClassParameter);
+
+                var priceParameter = updateBookingCommand.CreateParameter();
+                priceParameter.ParameterName = "@Price";
+                priceParameter.Value = booking.Price;
+                updateBookingCommand.Parameters.Add(priceParameter);
+
+                Console.WriteLine(updateBookingCommand.CommandText);
+                databaseConnection.Open();
+
+                int rowCount = updateBookingCommand.ExecuteNonQuery();
+                return rowCount;
+            }
         }
 
         public int Delete(Booking booking)
         {
-            throw new NotImplementedException();
+            return Delete(booking.FlightId, booking.CustomerId);
         }
 
-        public int Delete(int FlightId, int CustomerId)
-        {
-            throw new NotImplementedException();
-        }
-
-        // Delete
-        public int DeleteByFlightId(int FlightId)
+        public int Delete(int flightId, int customerId)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
                 IDbCommand deleteBookingCommand = databaseConnection.CreateCommand();
-                deleteBookingCommand.CommandText = $"delete from Booking where Booking.FlightId = {FlightId};";
+                deleteBookingCommand.CommandText = "DELETE FROM Booking WHERE FlightId = @FlightId AND CustomerId = @CustomerId;";
+
+                var flightIdParameter = deleteBookingCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                deleteBookingCommand.Parameters.Add(flightIdParameter);
+
+                var customerIdParameter = deleteBookingCommand.CreateParameter();
+                customerIdParameter.ParameterName = "@CustomerId";
+                customerIdParameter.Value = customerId;
+                deleteBookingCommand.Parameters.Add(customerIdParameter);
 
                 Console.WriteLine(deleteBookingCommand.CommandText);
                 databaseConnection.Open();
@@ -224,7 +200,24 @@ namespace FlightPlanner.DataLayer
                 return rowCount;
             }
         }
-  
+        public int DeleteByFlightId(int flightId)
+        {
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                IDbCommand deleteBookingCommand = databaseConnection.CreateCommand();
+                deleteBookingCommand.CommandText = "DELETE FROM Booking WHERE FlightId = @FlightId;";
+
+                var flightIdParameter = deleteBookingCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                deleteBookingCommand.Parameters.Add(flightIdParameter);
+
+                Console.WriteLine(deleteBookingCommand.CommandText);
+                databaseConnection.Open();
+
+                int rowCount = deleteBookingCommand.ExecuteNonQuery();
+                return rowCount;
+            }
+        }
     }
 }
-

@@ -46,7 +46,6 @@
     <Compile Include="BusinessLogicLayer\BookingService.cs" />
     <Compile Include="DataLayer\Airline.cs" />
     <Compile Include="DataLayer\AirlineDataMapper.cs" />
-    <Compile Include="DataLayer\AirlineRepository.cs" />
     <Compile Include="DataLayer\CustomerDataMapper.cs" />
     <Compile Include="DataLayer\Booking.cs" />
     <Compile Include="DataLayer\BookingDataMapper.cs" />
@@ -56,6 +55,8 @@
     <Compile Include="DataLayer\Plane.cs" />
     <Compile Include="DataLayer\PlaneDataMapper.cs" />
     <Compile Include="DataLayer\PlaneRepository.cs" />
+    <Compile Include="DataLayer\PlaneType.cs" />
+    <Compile Include="DataLayer\PlaneTypeDatamapper.cs" />
     <Compile Include="DataLayer\TestHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

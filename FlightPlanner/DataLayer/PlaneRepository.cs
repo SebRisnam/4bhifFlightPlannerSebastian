@@ -28,8 +28,10 @@ namespace FlightPlanner.DataLayer
             {
                 // FK_Booking_Flight uses "on delete no action"
                 // FK_PilotRoster_Flight uses "ON DELETE CASCADE"
-                rowCount = flightRepository.DeleteFlightByPlaneId(id);
-                rowCount = planeDataMapper.Delete(id);
+                //Need to delete the Flights and only then the plane
+                flightRepository.DeleteFlightsByPlaneId(id);
+                planeDataMapper.Delete(id);
+                rowCount++;
             }
             catch (DbException dbEx) // TODO: review and improve exception handling
             {
@@ -40,11 +42,6 @@ namespace FlightPlanner.DataLayer
             {
                 // TODO: log to log file
                 throw;
-            }
-
-            if (rowCount < 1)
-            {
-                throw new InvalidOperationException("The specified Airline could not be deleted");
             }
         }
     }
