@@ -200,6 +200,7 @@ namespace FlightPlanner.DataLayer
                 return rowCount;
             }
         }
+
         public int DeleteByFlightId(int flightId)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))

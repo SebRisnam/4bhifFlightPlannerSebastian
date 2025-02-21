@@ -44,19 +44,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusinessLogicLayer\BookingService.cs" />
-    <Compile Include="DataLayer\Airline.cs" />
-    <Compile Include="DataLayer\AirlineDataMapper.cs" />
-    <Compile Include="DataLayer\CustomerDataMapper.cs" />
-    <Compile Include="DataLayer\Booking.cs" />
-    <Compile Include="DataLayer\BookingDataMapper.cs" />
-    <Compile Include="DataLayer\Flight.cs" />
-    <Compile Include="DataLayer\FlightDataMapper.cs" />
-    <Compile Include="DataLayer\FlightRepository.cs" />
-    <Compile Include="DataLayer\Plane.cs" />
-    <Compile Include="DataLayer\PlaneDataMapper.cs" />
-    <Compile Include="DataLayer\PlaneRepository.cs" />
-    <Compile Include="DataLayer\PlaneType.cs" />
-    <Compile Include="DataLayer\PlaneTypeDatamapper.cs" />
+    <Compile Include="DataLayer\DataMapper\PilotDataMapper.cs" />
+    <Compile Include="DataLayer\DataMapper\PilotRosterDataMapper.cs" />
+    <Compile Include="DataLayer\DataMapper\PilotTrainingDataMapper.cs" />
+    <Compile Include="DataLayer\DataMapper\TrainingDataMapper.cs" />
+    <Compile Include="DataLayer\Entities\Airline.cs" />
+    <Compile Include="DataLayer\DataMapper\AirlineDataMapper.cs" />
+    <Compile Include="DataLayer\DataMapper\CustomerDataMapper.cs" />
+    <Compile Include="DataLayer\Entities\Booking.cs" />
+    <Compile Include="DataLayer\DataMapper\BookingDataMapper.cs" />
+    <Compile Include="DataLayer\Entities\Customer.cs" />
+    <Compile Include="DataLayer\Entities\Flight.cs" />
+    <Compile Include="DataLayer\DataMapper\FlightDataMapper.cs" />
+    <Compile Include="DataLayer\Entities\Pilot.cs" />
+    <Compile Include="DataLayer\Entities\PilotRoster.cs" />
+    <Compile Include="DataLayer\Entities\PilotTraining.cs" />
+    <Compile Include="DataLayer\Entities\Training.cs" />
+    <Compile Include="DataLayer\Repository\FlightRepository.cs" />
+    <Compile Include="DataLayer\Entities\Plane.cs" />
+    <Compile Include="DataLayer\DataMapper\PlaneDataMapper.cs" />
+    <Compile Include="DataLayer\Repository\PlaneRepository.cs" />
+    <Compile Include="DataLayer\Entities\PlaneType.cs" />
+    <Compile Include="DataLayer\DataMapper\PlaneTypeDataMapper.cs" />
     <Compile Include="DataLayer\TestHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -67,5 +76,6 @@
   <ItemGroup>
     <Content Include="DataLayer\FlightPlannerCreateDb.sql" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

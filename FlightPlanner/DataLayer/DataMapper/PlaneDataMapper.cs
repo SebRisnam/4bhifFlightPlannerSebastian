@@ -47,29 +47,40 @@ namespace FlightPlanner.DataLayer
         }
 
 
-        public Plane Read(int Id)
+        public Plane Read(int id)
         {
-            Plane plane = new Plane();
+            Plane plane = null;
+
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
                 IDbCommand selectPlaneCommand = databaseConnection.CreateCommand();
-                selectPlaneCommand.CommandText = "select * from Plane where Id = " + Id;
-                databaseConnection.Open();
-                IDataReader planeReader = selectPlaneCommand.ExecuteReader();
-                
-                if (planeReader.Read())
-                {
-                    plane.Id = (int)planeReader["Id"];
-                    plane.OwnershipDate = (DateTime)planeReader["OwnershipDate"];
-                    plane.LastMaintenance = (DateTime)planeReader["LastMaintenance"];
-                    plane.PlaneTypeId = (string)planeReader["PlaneTypeId"];
-                    plane.AirlineId = planeReader["AirlineId"] == DBNull.Value ? (int?)null : (int)planeReader["AirlineId"];
-                }
+                selectPlaneCommand.CommandText = "SELECT * FROM Plane WHERE Id = @Id;";
 
+                var idParameter = selectPlaneCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = id;
+                selectPlaneCommand.Parameters.Add(idParameter);
+
+                databaseConnection.Open();
+                using (IDataReader planeReader = selectPlaneCommand.ExecuteReader())
+                {
+                    if (planeReader.Read())
+                    {
+                        plane = new Plane
+                        {
+                            Id = (int)planeReader["Id"],
+                            OwnershipDate = (DateTime)planeReader["OwnershipDate"],
+                            LastMaintenance = (DateTime)planeReader["LastMaintenance"],
+                            PlaneTypeId = (string)planeReader["PlaneTypeId"],
+                            AirlineId = planeReader["AirlineId"] == DBNull.Value ? (int?)null : (int)planeReader["AirlineId"]
+                        };
+                    }
+                }
             }
 
             return plane;
         }
+
 
         public int Create(Plane plane)
         {
@@ -130,43 +141,72 @@ namespace FlightPlanner.DataLayer
             {
                 IDbCommand updatePlaneCommand = databaseConnection.CreateCommand();
                 updatePlaneCommand.CommandText =
-                   $"update Plane set OwnershipDate = '{plane.OwnershipDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"LastMaintenance = '{plane.LastMaintenance.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}', " +
-                   $"PlaneTypeId = '{plane.PlaneTypeId}', " +
-                   $"AirLineId = '{plane.AirlineId}' " +
-                   $"where Plane.Id = {plane.Id};";
-                Console.WriteLine(updatePlaneCommand.CommandText);
+                    "UPDATE Plane SET " +
+                    "OwnershipDate = @OwnershipDate, " +
+                    "LastMaintenance = @LastMaintenance, " +
+                    "PlaneTypeId = @PlaneTypeId, " +
+                    "AirlineId = @AirlineId " +
+                    "WHERE Id = @Id;";
 
+                var idParameter = updatePlaneCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = plane.Id;
+                updatePlaneCommand.Parameters.Add(idParameter);
+
+                var ownershipDateParameter = updatePlaneCommand.CreateParameter();
+                ownershipDateParameter.ParameterName = "@OwnershipDate";
+                ownershipDateParameter.Value = plane.OwnershipDate;
+                updatePlaneCommand.Parameters.Add(ownershipDateParameter);
+
+                var lastMaintenanceParameter = updatePlaneCommand.CreateParameter();
+                lastMaintenanceParameter.ParameterName = "@LastMaintenance";
+                lastMaintenanceParameter.Value = plane.LastMaintenance;
+                updatePlaneCommand.Parameters.Add(lastMaintenanceParameter);
+
+                var planeTypeIdParameter = updatePlaneCommand.CreateParameter();
+                planeTypeIdParameter.ParameterName = "@PlaneTypeId";
+                planeTypeIdParameter.Value = plane.PlaneTypeId;
+                updatePlaneCommand.Parameters.Add(planeTypeIdParameter);
+
+                var airlineIdParameter = updatePlaneCommand.CreateParameter();
+                airlineIdParameter.ParameterName = "@AirlineId";
+                airlineIdParameter.Value = (object?)plane.AirlineId ?? DBNull.Value; // Handles null values correctly
+                updatePlaneCommand.Parameters.Add(airlineIdParameter);
+
+                Console.WriteLine(updatePlaneCommand.CommandText);
                 databaseConnection.Open();
 
                 int rowCount = updatePlaneCommand.ExecuteNonQuery();
                 return rowCount;
-
             }
         }
+
 
         public int Delete(Plane plane)
         {
             return Delete(plane.Id);
         }
 
-        public int Delete(int Id)
+        public int Delete(int id)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
                 IDbCommand deletePlaneCommand = databaseConnection.CreateCommand();
-                deletePlaneCommand.CommandText =
-                   $"delete from Plane where Plane.Id = {Id};";
+                deletePlaneCommand.CommandText = "DELETE FROM Plane WHERE Id = @Id;";
+
+                var idParameter = deletePlaneCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = id;
+                deletePlaneCommand.Parameters.Add(idParameter);
 
                 Console.WriteLine(deletePlaneCommand.CommandText);
-
                 databaseConnection.Open();
 
                 int rowCount = deletePlaneCommand.ExecuteNonQuery();
                 return rowCount;
             }
-
         }
+
 
     }
 }

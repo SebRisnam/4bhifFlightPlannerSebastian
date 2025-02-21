@@ -110,14 +110,33 @@ namespace FlightPlanner.DataLayer
             {
                 IDbCommand updateAirlineCommand = databaseConnection.CreateCommand();
                 updateAirlineCommand.CommandText =
-                   $"update Airline set " +
-                   $"RegisteredCompanyName = '{airline.RegisteredCompanyName}', " +
-                   $"Country = '{airline.Country}', " +
-                   $"HeadQuarters = '{airline.HeadQuarters}' " +
-                   $"where Id = {airline.Id};";
+                    "UPDATE Airline SET " +
+                    "RegisteredCompanyName = @RegisteredCompanyName, " +
+                    "Country = @Country, " +
+                    "HeadQuarters = @HeadQuarters " +
+                    "WHERE Id = @Id;";
+
+                var idParameter = updateAirlineCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = airline.Id;
+                updateAirlineCommand.Parameters.Add(idParameter);
+
+                var companyNameParameter = updateAirlineCommand.CreateParameter();
+                companyNameParameter.ParameterName = "@RegisteredCompanyName";
+                companyNameParameter.Value = airline.RegisteredCompanyName;
+                updateAirlineCommand.Parameters.Add(companyNameParameter);
+
+                var countryParameter = updateAirlineCommand.CreateParameter();
+                countryParameter.ParameterName = "@Country";
+                countryParameter.Value = airline.Country;
+                updateAirlineCommand.Parameters.Add(countryParameter);
+
+                var headquartersParameter = updateAirlineCommand.CreateParameter();
+                headquartersParameter.ParameterName = "@HeadQuarters";
+                headquartersParameter.Value = airline.HeadQuarters;
+                updateAirlineCommand.Parameters.Add(headquartersParameter);
 
                 Console.WriteLine(updateAirlineCommand.CommandText);
-
                 databaseConnection.Open();
 
                 int rowCount = updateAirlineCommand.ExecuteNonQuery();
@@ -125,27 +144,31 @@ namespace FlightPlanner.DataLayer
             }
         }
 
+
         public int Delete(Airline airline)
         {
             return Delete(airline.Id);
         }
-        
-        public int Delete(int Id)
+
+        public int Delete(int id)
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                IDbCommand deletePlaneCommand = databaseConnection.CreateCommand();
-                deletePlaneCommand.CommandText =
-                   $"delete from Airline where Airline.Id = {Id};";
+                IDbCommand deleteAirlineCommand = databaseConnection.CreateCommand();
+                deleteAirlineCommand.CommandText = "DELETE FROM Airline WHERE Id = @Id;";
 
-                Console.WriteLine(deletePlaneCommand.CommandText);
+                var idParameter = deleteAirlineCommand.CreateParameter();
+                idParameter.ParameterName = "@Id";
+                idParameter.Value = id;
+                deleteAirlineCommand.Parameters.Add(idParameter);
 
+                Console.WriteLine(deleteAirlineCommand.CommandText);
                 databaseConnection.Open();
 
-                int rowCount = deletePlaneCommand.ExecuteNonQuery();
+                int rowCount = deleteAirlineCommand.ExecuteNonQuery();
                 return rowCount;
             }
-
         }
+
     }
 }
