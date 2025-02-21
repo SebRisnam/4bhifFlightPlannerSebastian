@@ -56,13 +56,15 @@ namespace FlightPlanner.DataLayer
                 selectPlaneCommand.CommandText = "select * from Plane where Id = " + Id;
                 databaseConnection.Open();
                 IDataReader planeReader = selectPlaneCommand.ExecuteReader();
-
-                plane.Id = (int)planeReader["Id"];
-                plane.OwnershipDate = (DateTime)planeReader["OwnershipDate"];
-                plane.LastMaintenance = (DateTime)planeReader["LastMaintenance"];
-                plane.PlaneTypeId = (string)planeReader["PlaneTypeId"];
-                plane.AirlineId = planeReader["AirlineId"] == DBNull.Value ? (int?)null : (int)planeReader["AirlineId"];
-
+                
+                if (planeReader.Read())
+                {
+                    plane.Id = (int)planeReader["Id"];
+                    plane.OwnershipDate = (DateTime)planeReader["OwnershipDate"];
+                    plane.LastMaintenance = (DateTime)planeReader["LastMaintenance"];
+                    plane.PlaneTypeId = (string)planeReader["PlaneTypeId"];
+                    plane.AirlineId = planeReader["AirlineId"] == DBNull.Value ? (int?)null : (int)planeReader["AirlineId"];
+                }
 
             }
 

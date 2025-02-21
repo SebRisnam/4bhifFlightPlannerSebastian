@@ -44,7 +44,7 @@ namespace FlightPlanner
                 TestHelper.InitializeDatabase(connectionString);
 
                 // CRUD - Create, Read, Update, Delete
-
+                /*
                 AirlineDataMapper airlineDataMapper = new AirlineDataMapper(connectionString);
                 Console.WriteLine("select * from Airline:");
                 List<Airline> airlines = airlineDataMapper.ReadAirlines();
@@ -110,7 +110,7 @@ namespace FlightPlanner
                 foreach (Plane item in planes)
                 {
                     Console.WriteLine(item.ToString());
-                }
+                }*/
 
                 /*
                 FlightDataMapper flightDataMapper = new FlightDataMapper(connectionString);
@@ -167,10 +167,27 @@ namespace FlightPlanner
 
                 */
 
+                Console.WriteLine("===============");
+                Console.WriteLine("Starting booking table");
+                BookingDataMapper bookingDataMapper = new BookingDataMapper(connectionString);
+                List<Booking> bookings = bookingDataMapper.ReadBookings();
+                foreach (Booking booking in bookings)
+                {
+                    Console.WriteLine(booking);
+                }
+
                 Console.WriteLine("=================================================");
                 Console.WriteLine("Testing the booking of a flight");
                 BookingService bookingService = new BookingService(connectionString);
                 bookingService.BookFlight(203, 1000, 1, 2, 240);
+
+                Console.WriteLine("==========================");
+                Console.WriteLine("Looking if the booking has been made");
+                bookings = bookingDataMapper.ReadBookings();
+                foreach(Booking booking in bookings)
+                {
+                    Console.WriteLine(booking);
+                }
             }
             catch (Exception ex)
             {

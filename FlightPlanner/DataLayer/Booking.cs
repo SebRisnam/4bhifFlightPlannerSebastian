@@ -28,5 +28,12 @@ namespace FlightPlanner.DataLayer
         public int Seats { set; get; }
         public int TravelClass { set; get; }
         public decimal Price { set; get; }
+
+        public override string ToString()
+        {
+            return $"FlightId: {FlightId}, CustomerId: {CustomerId}, " +
+                   $"Seats: {Seats}, TravelClass: {TravelClass}, Price: {Price:C}";
+        }
+
     }
 }

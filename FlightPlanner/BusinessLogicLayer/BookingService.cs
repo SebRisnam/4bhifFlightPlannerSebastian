@@ -9,13 +9,13 @@ namespace FlightPlanner.BusinessLogicLayer
 {
     class BookingService
     {
-        private FlightRepository _flightRepository;
+        private FlightRepository flightRepository;
         private string connectionString;
 
         public BookingService(string connectionString)
         {
             this.connectionString = connectionString;
-            _flightRepository = new FlightRepository(connectionString);
+            flightRepository = new FlightRepository(connectionString);
         }
 
         public void BookFlight(int FlightId, int CustomerId, int Seats, int TravelClass, decimal Price)
@@ -24,16 +24,17 @@ namespace FlightPlanner.BusinessLogicLayer
             //get the taken seats --> Logic to refuse or not
             //make Booking and save it in the db
 
-
             //get the Seats of the plane
-            int availableSeats = _flightRepository.GetSeatsOfPlaneByFlightId(FlightId);
+            int availableSeats = flightRepository.GetSeatsOfPlaneByFlightId(FlightId);
             //get taken Seats
-            int takenSeats = _flightRepository.GetSeatsOfPlaneByFlightId(FlightId);
-            if (takenSeats < availableSeats)
+            int takenSeats = flightRepository.SumSeatsByFlightId(FlightId);
+            
+            if (takenSeats <= availableSeats)
             {
                 //make Booking
                 Booking booking = new Booking(FlightId, CustomerId, Seats, TravelClass, Price);
-                _flightRepository.CreateBooking(booking);
+                flightRepository.CreateBooking(booking);
+                Console.WriteLine("Booking has successfully been made!");
             }
             else
             {
