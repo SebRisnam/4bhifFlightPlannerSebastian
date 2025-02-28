@@ -170,7 +170,7 @@ namespace FlightPlanner.DataLayer
 
                 var airlineIdParameter = updatePlaneCommand.CreateParameter();
                 airlineIdParameter.ParameterName = "@AirlineId";
-                airlineIdParameter.Value = (object?)plane.AirlineId ?? DBNull.Value; // Handles null values correctly
+                airlineIdParameter.Value = (object)plane.AirlineId ?? DBNull.Value; // Handles null values correctly
                 updatePlaneCommand.Parameters.Add(airlineIdParameter);
 
                 Console.WriteLine(updatePlaneCommand.CommandText);

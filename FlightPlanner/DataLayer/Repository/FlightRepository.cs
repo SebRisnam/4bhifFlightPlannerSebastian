@@ -70,13 +70,39 @@ namespace FlightPlanner.DataLayer
             bookingDataMapper.Create(booking);
         }
 
-        public int GetSeatsOfPlaneByFlightId(int FlightId)
+        public int GetSeatsByFlightId(int flightId)
         {
-            int planeId = flightDataMapper.Read(FlightId).PlaneId;
-            string planeType = planeDataMapper.Read(planeId).PlaneTypeId;
-            int seats = planeTypeDataMapper.Read(planeType).Seats;
-            return seats;
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                // Create the command for fetching the seats based on FlightId
+                IDbCommand seatCommand = databaseConnection.CreateCommand();
+
+                // SQL query to get the number of seats for the plane related to the FlightId
+                seatCommand.CommandText = @"
+                    SELECT pt.Seats
+                    FROM Flight f
+                    INNER JOIN Plane p ON f.PlaneId = p.Id
+                    INNER JOIN PlaneType pt ON p.PlaneTypeId = pt.Id
+                    WHERE f.Id = @FlightId";
+
+                var flightIdParameter = seatCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                seatCommand.Parameters.Add(flightIdParameter);
+
+                databaseConnection.Open();
+
+                object result = seatCommand.ExecuteScalar();
+
+                if (result == DBNull.Value || result == null)
+                {
+                    return 0;
+                }
+
+                return Convert.ToInt32(result);
+            }
         }
+
 
         public int SumSeatsByFlightId(int flightId)
         {

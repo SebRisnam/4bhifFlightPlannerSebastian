@@ -25,11 +25,11 @@ namespace FlightPlanner.BusinessLogicLayer
             //make Booking and save it in the db
 
             //get the Seats of the plane
-            int availableSeats = flightRepository.GetSeatsOfPlaneByFlightId(FlightId);
+            int availableSeats = flightRepository.GetSeatsByFlightId(FlightId);
             //get taken Seats
             int takenSeats = flightRepository.SumSeatsByFlightId(FlightId);
             
-            if (takenSeats <= availableSeats)
+            if (Seats <= availableSeats - takenSeats)
             {
                 //make Booking
                 Booking booking = new Booking(FlightId, CustomerId, Seats, TravelClass, Price);

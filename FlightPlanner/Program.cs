@@ -44,73 +44,7 @@ namespace FlightPlanner
                 TestHelper.InitializeDatabase(connectionString);
 
                 // CRUD - Create, Read, Update, Delete
-                /*
-                AirlineDataMapper airlineDataMapper = new AirlineDataMapper(connectionString);
-                Console.WriteLine("select * from Airline:");
-                List<Airline> airlines = airlineDataMapper.ReadAirlines();
-                foreach (Airline item in airlines)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-                Airline testAirline = new Airline
-                {
-                    Id = 4,
-                    RegisteredCompanyName = "My Airlines",
-                    Country = "This One",
-                    HeadQuarters = "That One"
-                };
-
-                airlineDataMapper.Create(testAirline);
-                testAirline.HeadQuarters = "Another One";
-
-                rowCount = airlineDataMapper.Update(testAirline);
                 
-                rowCount = airlineDataMapper.Delete(3);
-                //AirlineRepository airlineRepository = new AirlineRepository(connectionString);
-                //airlineRepository.DeleteAirline(3);
-                
-                Console.WriteLine("\n=================================0\n");
-
-                PlaneDataMapper planeDataMapper = new PlaneDataMapper(connectionString);
-                Console.WriteLine("select * from Plane:");
-                List<Plane> planes = planeDataMapper.ReadPlanes();
-                foreach (Plane item in planes)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-                Plane testPlane = new Plane
-                {
-                    Id = 500,
-                    OwnershipDate = DateTime.Parse("03.12.1981 00:00:00"),
-                    LastMaintenance = DateTime.Parse("30.12.2000 00:00:00"),
-                    PlaneTypeId = "Boeing 747",
-                    AirlineId = 2
-
-                };
-
-                planeDataMapper.Create(testPlane);
-                testPlane.AirlineId = 1;
-                planes = planeDataMapper.ReadPlanes();
-                foreach (Plane item in planes)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-
-                rowCount = planeDataMapper.Update(testPlane);
-                planes = planeDataMapper.ReadPlanes();
-                foreach (Plane item in planes)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-                
-                //rowCount = planeDataMapper.Delete(10);
-                PlaneRepository planeRepository = new PlaneRepository(connectionString);
-                planeRepository.DeletePlane(10);
-                planes = planeDataMapper.ReadPlanes();
-                foreach (Plane item in planes)
-                {
-                    Console.WriteLine(item.ToString());
-                }*/
 
                 /*
                 FlightDataMapper flightDataMapper = new FlightDataMapper(connectionString);
@@ -167,27 +101,7 @@ namespace FlightPlanner
 
                 */
 
-                Console.WriteLine("===============");
-                Console.WriteLine("Starting booking table");
-                BookingDataMapper bookingDataMapper = new BookingDataMapper(connectionString);
-                List<Booking> bookings = bookingDataMapper.ReadBookings();
-                foreach (Booking booking in bookings)
-                {
-                    Console.WriteLine(booking);
-                }
-
-                Console.WriteLine("=================================================");
-                Console.WriteLine("Testing the booking of a flight");
-                BookingService bookingService = new BookingService(connectionString);
-                bookingService.BookFlight(203, 1000, 1, 2, 240);
-
-                Console.WriteLine("==========================");
-                Console.WriteLine("Looking if the booking has been made");
-                bookings = bookingDataMapper.ReadBookings();
-                foreach(Booking booking in bookings)
-                {
-                    Console.WriteLine(booking);
-                }
+                
             }
             catch (Exception ex)
             {
@@ -195,6 +109,111 @@ namespace FlightPlanner
             }
             Console.WriteLine("Press enter to stop the program.");
             Console.ReadLine();
+        }
+
+        public static void TestBookingService(string connectionString)
+        {
+            Console.WriteLine("===============");
+            Console.WriteLine("Starting booking table");
+            BookingDataMapper bookingDataMapper = new BookingDataMapper(connectionString);
+            List<Booking> bookings = bookingDataMapper.ReadBookings();
+            foreach (Booking booking in bookings)
+            {
+                Console.WriteLine(booking);
+            }
+
+            Console.WriteLine("=================================================");
+            Console.WriteLine("Testing the booking of a flight");
+            BookingService bookingService = new BookingService(connectionString);
+            bookingService.BookFlight(203, 1000, 1, 2, 240);
+
+            Console.WriteLine("==========================");
+            Console.WriteLine("Looking if the booking has been made");
+            bookings = bookingDataMapper.ReadBookings();
+            foreach (Booking booking in bookings)
+            {
+                Console.WriteLine(booking);
+            }
+        }
+
+        public static int TestAirlineDataMapper(string connectionString)
+        {
+            int rowCount = 0;
+            AirlineDataMapper airlineDataMapper = new AirlineDataMapper(connectionString);
+            Console.WriteLine("select * from Airline:");
+            List<Airline> airlines = airlineDataMapper.ReadAirlines();
+            foreach (Airline item in airlines)
+            {
+                Console.WriteLine(item.ToString());
+            }
+            Airline testAirline = new Airline
+            {
+                Id = 4,
+                RegisteredCompanyName = "My Airlines",
+                Country = "This One",
+                HeadQuarters = "That One"
+            };
+
+            airlineDataMapper.Create(testAirline);
+            testAirline.HeadQuarters = "Another One";
+
+            rowCount = airlineDataMapper.Update(testAirline);
+
+            rowCount = airlineDataMapper.Delete(3);
+            //AirlineRepository airlineRepository = new AirlineRepository(connectionString);
+            //airlineRepository.DeleteAirline(3);
+            return rowCount;
+        }
+
+        public static int TestPlaneDataMapper(string connectionString)
+        {
+            int rowCount = 0;
+            Console.WriteLine("\n=================================0\n");
+
+            PlaneDataMapper planeDataMapper = new PlaneDataMapper(connectionString);
+            Console.WriteLine("select * from Plane:");
+            List<Plane> planes = planeDataMapper.ReadPlanes();
+            foreach (Plane item in planes)
+            {
+                Console.WriteLine(item.ToString());
+            }
+            Plane testPlane = new Plane
+            {
+                Id = 500,
+                OwnershipDate = DateTime.Parse("03.12.1981 00:00:00"),
+                LastMaintenance = DateTime.Parse("30.12.2000 00:00:00"),
+                PlaneTypeId = "Boeing 747",
+                AirlineId = 2
+
+            };
+
+            planeDataMapper.Create(testPlane);
+            testPlane.AirlineId = 1;
+            planes = planeDataMapper.ReadPlanes();
+            foreach (Plane item in planes)
+            {
+                Console.WriteLine(item.ToString());
+            }
+
+            rowCount = planeDataMapper.Update(testPlane);
+            planes = planeDataMapper.ReadPlanes();
+            foreach (Plane item in planes)
+            {
+                Console.WriteLine(item.ToString());
+            }
+
+            //rowCount = planeDataMapper.Delete(10);
+            /*
+            PlaneRepository planeRepository = new PlaneRepository(connectionString);
+            planeRepository.DeletePlane(10);
+            planes = planeDataMapper.ReadPlanes();
+            foreach (Plane item in planes)
+            {
+                Console.WriteLine(item.ToString());
+            }
+            */
+
+            return rowCount;
         }
     }
 }
