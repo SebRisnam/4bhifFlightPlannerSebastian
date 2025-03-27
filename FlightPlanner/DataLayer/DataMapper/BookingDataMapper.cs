@@ -87,42 +87,60 @@ namespace FlightPlanner.DataLayer
         {
             using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
             {
-                IDbCommand createBookingCommand = databaseConnection.CreateCommand();
-
-                createBookingCommand.CommandText =
-                    "INSERT INTO Booking (FlightId, CustomerId, Seats, TravelClass, Price) " +
-                    "VALUES (@FlightId, @CustomerId, @Seats, @TravelClass, @Price);";
-
-                var flightIdParameter = createBookingCommand.CreateParameter();
-                flightIdParameter.ParameterName = "@FlightId";
-                flightIdParameter.Value = booking.FlightId;
-                createBookingCommand.Parameters.Add(flightIdParameter);
-
-                var customerIdParameter = createBookingCommand.CreateParameter();
-                customerIdParameter.ParameterName = "@CustomerId";
-                customerIdParameter.Value = booking.CustomerId;
-                createBookingCommand.Parameters.Add(customerIdParameter);
-
-                var seatsParameter = createBookingCommand.CreateParameter();
-                seatsParameter.ParameterName = "@Seats";
-                seatsParameter.Value = booking.Seats;
-                createBookingCommand.Parameters.Add(seatsParameter);
-
-                var travelClassParameter = createBookingCommand.CreateParameter();
-                travelClassParameter.ParameterName = "@TravelClass";
-                travelClassParameter.Value = booking.TravelClass;
-                createBookingCommand.Parameters.Add(travelClassParameter);
-
-                var priceParameter = createBookingCommand.CreateParameter();
-                priceParameter.ParameterName = "@Price";
-                priceParameter.Value = booking.Price;
-                createBookingCommand.Parameters.Add(priceParameter);
-
-                Console.WriteLine(createBookingCommand.CommandText);
                 databaseConnection.Open();
+                using (var transaction = databaseConnection.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        IDbCommand createBookingCommand = databaseConnection.CreateCommand();
+                        createBookingCommand.Transaction = transaction;
 
-                int rowCount = createBookingCommand.ExecuteNonQuery();
-                return rowCount;
+                        createBookingCommand.CommandText =
+                            "INSERT INTO Booking (FlightId, CustomerId, Seats, TravelClass, Price) " +
+                            "VALUES (@FlightId, @CustomerId, @Seats, @TravelClass, @Price);";
+
+                        var flightIdParameter = createBookingCommand.CreateParameter();
+                        flightIdParameter.ParameterName = "@FlightId";
+                        flightIdParameter.Value = booking.FlightId;
+                        createBookingCommand.Parameters.Add(flightIdParameter);
+
+                        var customerIdParameter = createBookingCommand.CreateParameter();
+                        customerIdParameter.ParameterName = "@CustomerId";
+                        customerIdParameter.Value = booking.CustomerId;
+                        createBookingCommand.Parameters.Add(customerIdParameter);
+
+                        var seatsParameter = createBookingCommand.CreateParameter();
+                        seatsParameter.ParameterName = "@Seats";
+                        seatsParameter.Value = booking.Seats;
+                        createBookingCommand.Parameters.Add(seatsParameter);
+
+                        var travelClassParameter = createBookingCommand.CreateParameter();
+                        travelClassParameter.ParameterName = "@TravelClass";
+                        travelClassParameter.Value = booking.TravelClass;
+                        createBookingCommand.Parameters.Add(travelClassParameter);
+
+                        var priceParameter = createBookingCommand.CreateParameter();
+                        priceParameter.ParameterName = "@Price";
+                        priceParameter.Value = booking.Price;
+                        createBookingCommand.Parameters.Add(priceParameter);
+
+                        Console.WriteLine(createBookingCommand.CommandText);
+
+                        int rowCount = createBookingCommand.ExecuteNonQuery();
+                        transaction.Commit();
+                        return rowCount;
+                    }
+                    catch (DbException dbEx)
+                    {
+                        transaction.Rollback();
+                        throw new InvalidOperationException("Booking could not be created", dbEx);
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 

@@ -120,13 +120,12 @@ namespace FlightPlanner.DataLayer
 
                 object result = sumSeatsCommand.ExecuteScalar();
 
-                // If no bookings exist for the FlightId, result will be DBNull.Value
                 if (result == DBNull.Value)
                 {
-                    return 0; // No seats booked for this FlightId
+                    return 0;
                 }
 
-                return Convert.ToInt32(result); // Return the total number of seats
+                return Convert.ToInt32(result);
             }
         }
 

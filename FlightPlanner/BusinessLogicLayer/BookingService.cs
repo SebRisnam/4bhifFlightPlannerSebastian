@@ -16,6 +16,7 @@ namespace FlightPlanner.BusinessLogicLayer
         {
             this.connectionString = connectionString;
             flightRepository = new FlightRepository(connectionString);
+            
         }
 
         public void BookFlight(int FlightId, int CustomerId, int Seats, int TravelClass, decimal Price)

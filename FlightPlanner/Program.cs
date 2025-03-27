@@ -100,8 +100,8 @@ namespace FlightPlanner
                 }
 
                 */
+                TestBookingService(connectionString);
 
-                
             }
             catch (Exception ex)
             {
@@ -113,6 +113,7 @@ namespace FlightPlanner
 
         public static void TestBookingService(string connectionString)
         {
+            // TODO: Test with a flight that does not have a Booking yet
             Console.WriteLine("===============");
             Console.WriteLine("Starting booking table");
             BookingDataMapper bookingDataMapper = new BookingDataMapper(connectionString);
@@ -125,7 +126,10 @@ namespace FlightPlanner
             Console.WriteLine("=================================================");
             Console.WriteLine("Testing the booking of a flight");
             BookingService bookingService = new BookingService(connectionString);
-            bookingService.BookFlight(203, 1000, 1, 2, 240);
+            Console.WriteLine("Give Customer Id");
+            int customerId = 1000;
+            customerId = int.Parse(Console.ReadLine());
+            bookingService.BookFlight(210, customerId, 120, 2, 240);
 
             Console.WriteLine("==========================");
             Console.WriteLine("Looking if the booking has been made");
