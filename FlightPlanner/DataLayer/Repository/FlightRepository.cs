@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.Common;
+using System.CodeDom;
 
 namespace FlightPlanner.DataLayer
 {
@@ -127,6 +128,122 @@ namespace FlightPlanner.DataLayer
 
                 return Convert.ToInt32(result);
             }
+        }
+
+        #region Transaction
+        public void CreateBookingTransaction(Booking booking, DbTransaction transaction)
+        {
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                try
+                    {
+                        IDbCommand createBookingCommand = databaseConnection.CreateCommand();
+                        createBookingCommand.Transaction = transaction;
+
+                        createBookingCommand.CommandText =
+                            "INSERT INTO Booking (FlightId, CustomerId, Seats, TravelClass, Price) " +
+                            "VALUES (@FlightId, @CustomerId, @Seats, @TravelClass, @Price);";
+
+                        var flightIdParameter = createBookingCommand.CreateParameter();
+                        flightIdParameter.ParameterName = "@FlightId";
+                        flightIdParameter.Value = booking.FlightId;
+                        createBookingCommand.Parameters.Add(flightIdParameter);
+
+                        var customerIdParameter = createBookingCommand.CreateParameter();
+                        customerIdParameter.ParameterName = "@CustomerId";
+                        customerIdParameter.Value = booking.CustomerId;
+                        createBookingCommand.Parameters.Add(customerIdParameter);
+
+                        var seatsParameter = createBookingCommand.CreateParameter();
+                        seatsParameter.ParameterName = "@Seats";
+                        seatsParameter.Value = booking.Seats;
+                        createBookingCommand.Parameters.Add(seatsParameter);
+
+                        var travelClassParameter = createBookingCommand.CreateParameter();
+                        travelClassParameter.ParameterName = "@TravelClass";
+                        travelClassParameter.Value = booking.TravelClass;
+                        createBookingCommand.Parameters.Add(travelClassParameter);
+
+                        var priceParameter = createBookingCommand.CreateParameter();
+                        priceParameter.ParameterName = "@Price";
+                        priceParameter.Value = booking.Price;
+                        createBookingCommand.Parameters.Add(priceParameter);
+
+                        Console.WriteLine(createBookingCommand.CommandText);
+
+                        int rowCount = createBookingCommand.ExecuteNonQuery();
+                    }
+                    catch (DbException dbEx)
+                    {
+                        throw new InvalidOperationException("Booking could not be created", dbEx);
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+        }
+        }
+
+        public int GetSeatsByFlightIdTransaction(int flightId, DbTransaction transaction)
+        {
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                // Create the command for fetching the seats based on FlightId
+                IDbCommand seatCommand = databaseConnection.CreateCommand();
+                seatCommand.Transaction = transaction;
+
+                // SQL query to get the number of seats for the plane related to the FlightId
+                seatCommand.CommandText = @"
+                    SELECT pt.Seats
+                    FROM Flight f
+                    INNER JOIN Plane p ON f.PlaneId = p.Id
+                    INNER JOIN PlaneType pt ON p.PlaneTypeId = pt.Id
+                    WHERE f.Id = @FlightId";
+
+                var flightIdParameter = seatCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                seatCommand.Parameters.Add(flightIdParameter);
+
+                databaseConnection.Open();
+
+                object result = seatCommand.ExecuteScalar();
+
+                if (result == DBNull.Value || result == null)
+                {
+                    return 0;
+                }
+
+                return Convert.ToInt32(result);
+            }
+        }
+
+
+        public int SumSeatsByFlightIdTransaction(int flightId, DbTransaction transaction)
+        {
+            using (DbConnection databaseConnection = new SqlConnection(this.ConnectionString))
+            {
+                IDbCommand sumSeatsCommand = databaseConnection.CreateCommand();
+                sumSeatsCommand.CommandText = "SELECT SUM(Seats) AS TotalSeats FROM Booking WHERE FlightId = @FlightId;";
+                sumSeatsCommand.Transaction = transaction;
+
+                var flightIdParameter = sumSeatsCommand.CreateParameter();
+                flightIdParameter.ParameterName = "@FlightId";
+                flightIdParameter.Value = flightId;
+                sumSeatsCommand.Parameters.Add(flightIdParameter);
+
+                databaseConnection.Open();
+
+                object result = sumSeatsCommand.ExecuteScalar();
+
+                if (result == DBNull.Value)
+                {
+                    return 0;
+                }
+
+                return Convert.ToInt32(result);
+            }
+            #endregion
         }
 
     }

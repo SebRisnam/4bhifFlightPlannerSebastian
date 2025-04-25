@@ -129,7 +129,7 @@ namespace FlightPlanner
             Console.WriteLine("Give Customer Id");
             int customerId = 1000;
             customerId = int.Parse(Console.ReadLine());
-            bookingService.BookFlight(210, customerId, 120, 2, 240);
+            bookingService.BookFlightTransaction(210, customerId, 120, 2, 240);
 
             Console.WriteLine("==========================");
             Console.WriteLine("Looking if the booking has been made");
