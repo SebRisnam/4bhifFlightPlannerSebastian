@@ -11,7 +11,7 @@ export const ProductDetailsPanel: FC<ProductDetailsPanelProps> = ({ product, onC
   if (!product) return null
 
   return (
-    <section className="max-w-5xl mx-auto px-4 pb-10">
+    <section className="px-8 pb-10">
       <div className="mt-6 bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row gap-6">
         <img
           src={product.imageUrl}
@@ -41,4 +41,3 @@ export const ProductDetailsPanel: FC<ProductDetailsPanelProps> = ({ product, onC
     </section>
   )
 }
-

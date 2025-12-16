@@ -8,10 +8,12 @@ interface HeaderProps {
 export const Header: FC<HeaderProps> = ({totalItems, onToggleCart}) => {
     return (
         <header className="bg-yellow-400 border-b-4 border-red-600">
-            <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="px-8 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <img className="px-4 py-2 h-25"
-                         src={"https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/LEGO_logo.svg/330px-LEGO_logo.svg.png"}
+                    <img
+                        className="px-4 py-2 h-25"
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/LEGO_logo.svg/330px-LEGO_logo.svg.png"
+                        alt="LEGO logo"
                     />
                 </div>
 
@@ -41,4 +43,3 @@ export const Header: FC<HeaderProps> = ({totalItems, onToggleCart}) => {
         </header>
     )
 }
-

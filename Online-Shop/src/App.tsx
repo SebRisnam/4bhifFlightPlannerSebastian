@@ -1,21 +1,53 @@
-import { useState } from 'react'
-import { PRODUCTS } from './products'
+import { useEffect, useState } from 'react'
 import type { CartItem, Product } from './types'
+import { fetchProducts } from './api'
 import { Header } from './components/Header'
 import { ProductList } from './components/ProductList'
 import { CartSidebar } from './components/CartSidebar'
 import { ProductDetailsPanel } from './components/ProductDetailsPanel'
 
 function App() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const data = await fetchProducts()
+        if (isMounted) {
+          setProducts(data)
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'Unknown error')
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadProducts()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   const totalPrice = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 
   const handleAddToCart = (productId: string) => {
-    const product = PRODUCTS.find((p) => p.id === productId)
+    const product = products.find((p) => p.id === productId)
     if (!product) return
 
     setCartItems((prev) => {
@@ -53,15 +85,25 @@ function App() {
   const handleCloseDetails = () => setSelectedProduct(null)
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen min-w-screen bg-gray-100">
       <Header totalItems={totalItems} onToggleCart={handleToggleCart} />
 
       <main className="pt-4 pb-20">
-        <ProductList
-          products={PRODUCTS}
-          onViewDetails={handleViewDetails}
-          onAddToCart={handleAddToCart}
-        />
+        {isLoading && (
+          <div className="px-8 py-10 text-center text-gray-700">Loading products...</div>
+        )}
+
+        {error && !isLoading && (
+          <div className="px-8 py-10 text-center text-red-600">{error}</div>
+        )}
+
+        {!isLoading && !error && (
+          <ProductList
+            products={products}
+            onViewDetails={handleViewDetails}
+            onAddToCart={handleAddToCart}
+          />
+        )}
         <ProductDetailsPanel
           product={selectedProduct}
           onClose={handleCloseDetails}
