@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import type { CartItem } from '../types'
+import { CartItemRow } from './CartItemRow'
 
 interface CartSidebarProps {
   isOpen: boolean
@@ -28,20 +29,7 @@ export const CartSidebar: FC<CartSidebarProps> = ({ isOpen, items, totalPrice, o
         ) : (
           <ul className="space-y-3">
             {items.map((item) => (
-              <li key={item.product.id} className="flex justify-between items-center text-sm">
-                <div>
-                  <div className="font-medium">{item.product.name}</div>
-                  <div className="text-gray-600">
-                    {item.quantity} x € {item.product.price.toFixed(2)}
-                  </div>
-                </div>
-                <button
-                  className="text-red-600 text-xs hover:underline"
-                  onClick={() => onRemoveItem(item.product.id)}
-                >
-                  Remove
-                </button>
-              </li>
+              <CartItemRow key={item.product.id} item={item} onRemove={onRemoveItem} />
             ))}
           </ul>
         )}
@@ -61,4 +49,3 @@ export const CartSidebar: FC<CartSidebarProps> = ({ isOpen, items, totalPrice, o
     </div>
   )
 }
-
