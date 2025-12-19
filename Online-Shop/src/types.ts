@@ -2,6 +2,7 @@ export interface CartItem {
     quantity: number
     product: Product
 }
+
 export interface Product {
 
     price: number
