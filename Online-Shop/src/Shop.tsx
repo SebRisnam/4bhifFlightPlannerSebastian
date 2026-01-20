@@ -77,6 +77,8 @@ function Shop() {
 
     const handleToggleCart = () => setIsCartOpen((open) => !open)
 
+    const handleClearCart = () => setCartItems([])
+
     const handleViewDetails = (product: Product) => {
         setSelectedProduct(product)
         window.scrollTo({top: 0, behavior: 'smooth'})
@@ -117,6 +119,7 @@ function Shop() {
                 totalPrice={totalPrice}
                 onClose={handleToggleCart}
                 onRemoveItem={handleRemoveFromCart}
+                onClearCart={handleClearCart}
             />
         </div>
     )
