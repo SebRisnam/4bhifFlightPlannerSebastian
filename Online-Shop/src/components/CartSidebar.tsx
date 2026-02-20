@@ -18,11 +18,14 @@ export const CartSidebar: FC<CartSidebarProps> = ({isOpen, items, totalPrice, on
     const [orderSuccess, setOrderSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [formData, setFormData] = useState<CustomerData>({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
+        phone: '',
         address: '',
         city: '',
         postalCode: '',
+        country: 'Austria',
     })
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,15 +41,13 @@ export const CartSidebar: FC<CartSidebarProps> = ({isOpen, items, totalPrice, on
         try {
             const orderItems: OrderItem[] = items.map(item => ({
                 productId: item.product.id,
-                name: item.product.name,
-                price: item.product.price,
                 quantity: item.quantity,
             }))
 
             await createOrder(orderItems, formData)
             setOrderSuccess(true)
             onClearCart()
-            setFormData({name: '', email: '', address: '', city: '', postalCode: ''})
+            setFormData({firstName: '', lastName: '', email: '', phone: '', address: '', city: '', postalCode: '', country: 'Austria'})
 
             // Reset after 3 seconds
             setTimeout(() => {
@@ -105,18 +106,33 @@ export const CartSidebar: FC<CartSidebarProps> = ({isOpen, items, totalPrice, on
                             </div>
                         )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Full Name *
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    First Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Last Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -129,6 +145,19 @@ export const CartSidebar: FC<CartSidebarProps> = ({isOpen, items, totalPrice, on
                                 value={formData.email}
                                 onChange={handleInputChange}
                                 required
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Phone
+                            </label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
                                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                             />
                         </div>
@@ -174,6 +203,20 @@ export const CartSidebar: FC<CartSidebarProps> = ({isOpen, items, totalPrice, on
                                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Country *
+                            </label>
+                            <input
+                                type="text"
+                                name="country"
+                                value={formData.country}
+                                onChange={handleInputChange}
+                                required
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                            />
                         </div>
 
                         <div className="border-t pt-4 mt-4">

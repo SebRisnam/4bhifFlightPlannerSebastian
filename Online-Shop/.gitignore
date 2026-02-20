@@ -13,6 +13,5 @@ yarn-error.log*
 .env.local
 
 .vscode/*
-
 .idea/
 !.idea/runConfigurations/

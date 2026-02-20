@@ -1,12 +1,15 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
-// Product Interface & Schema
+// =====================
+// Product
+// =====================
 export interface IProduct extends Document {
     productId: string;
     name: string;
     description: string;
     imageUrl: string;
     price: number;
+    quantity: number; // stock quantity
 }
 
 const ProductSchema = new Schema<IProduct>({
@@ -15,53 +18,68 @@ const ProductSchema = new Schema<IProduct>({
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
     price: { type: Number, required: true },
+    quantity: { type: Number, required: true, default: 100 },
 });
 
 export const Product = mongoose.model<IProduct>('Product', ProductSchema);
 
-// Order Item Interface
-export interface IOrderItem {
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-}
-
-// Customer Interface
-export interface ICustomer {
-    name: string;
+// =====================
+// Customer (own collection, referenced by Order)
+// =====================
+export interface ICustomer extends Document {
+    firstName: string;
+    lastName: string;
     email: string;
+    phone: string;
     address: string;
     city: string;
     postalCode: string;
+    country: string;
 }
 
-// Order Interface & Schema
+const CustomerSchema = new Schema<ICustomer>({
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, default: '' },
+    address: { type: String, required: true },
+    city: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    country: { type: String, required: true, default: 'Austria' },
+});
+
+export const Customer = mongoose.model<ICustomer>('Customer', CustomerSchema);
+
+// =====================
+// LineItem (embedded in Order)
+// =====================
+export interface ILineItem {
+    product: Types.ObjectId; // reference to Product
+    unitPrice: number;
+    quantity: number;
+}
+
+const LineItemSchema = new Schema<ILineItem>({
+    product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    unitPrice: { type: Number, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+});
+
+// =====================
+// Order
+// =====================
 export interface IOrder extends Document {
-    items: IOrderItem[];
-    customer: ICustomer;
+    customer: Types.ObjectId; // reference to Customer
+    lineItems: ILineItem[];
+    deliveryAddress: string;
     totalPrice: number;
     createdAt: Date;
 }
 
-const OrderItemSchema = new Schema<IOrderItem>({
-    productId: { type: String, required: true },
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
-    quantity: { type: Number, required: true },
-});
-
-const CustomerSchema = new Schema<ICustomer>({
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    postalCode: { type: String, required: true },
-});
-
 const OrderSchema = new Schema<IOrder>({
-    items: { type: [OrderItemSchema], required: true },
-    customer: { type: CustomerSchema, required: true },
+    customer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
+    lineItems: { type: [LineItemSchema], required: true },
+    deliveryAddress: { type: String, required: true },
     totalPrice: { type: Number, required: true },
     createdAt: { type: Date, default: Date.now },
 });
